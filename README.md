@@ -24,6 +24,16 @@ This is a Telegram bot built with TypeScript.
    npm install
    ```
 
+3. Create an `.env` file and add your bot token (from [BotFather](https://telegram.me/BotFather))
+
+   ```bash
+   TELEGRAM_BOT_TOKEN=<YOUR_TOKEN>
+   ```
+
 ### Usage
 
-To start the bot, run the following command:
+To start the bot locally, run the following command:
+
+   ```bash
+   npm run dev
+   ```
