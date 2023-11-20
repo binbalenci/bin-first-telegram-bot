@@ -1,5 +1,6 @@
 import 'dotenv/config'
-import { Bot, Context, InlineKeyboard } from "grammy";
+import { Bot, Context, InlineKeyboard, webhookCallback } from "grammy";
+import express from "express";
 
 
 // Get the token from .env file
@@ -9,7 +10,6 @@ const token = process.env.TELEGRAM_BOT_TOKEN || "";
 const bot = new Bot(token);
 
 const introductionMessage = `Hello! I'm a Telegram bot.
-I'm powered by Cyclic, the next-generation serverless computing platform.
 
 <b>Commands</b>
 /yo - Be greeted by me
@@ -22,11 +22,11 @@ I'm powered by Cyclic, the next-generation serverless computing platform.
 //   });
 
 const aboutUrlKeyboard = new InlineKeyboard().url(
-  "Host your own bot for free.",
-  "https://cyclic.sh/"
+  " © 2023 Bin Balenci. All rights Reserved.",
+  "https://binbalenci.com/"
 );
 
-const replyWithIntro = (ctx: any) =>
+const replyWithIntro = (ctx: Context) =>
   ctx.reply(introductionMessage, {
     reply_markup: aboutUrlKeyboard,
     parse_mode: "HTML",
@@ -38,7 +38,7 @@ the bot will reply with the introduction message. */
 bot.command("start", replyWithIntro);
 
 /* Handler for command `yo` */
-bot.command("yo", (ctx) => ctx.reply(`Yo ${ctx.from?.first_name}!`));
+bot.command("yo", (ctx) => ctx.reply(`Hello Mắm ${ctx.from?.first_name}!`));
 
 // Keep this at the bottom of the file
 // bot.on("message", replyWithIntro);
@@ -46,14 +46,22 @@ bot.command("yo", (ctx) => ctx.reply(`Yo ${ctx.from?.first_name}!`));
 // Suggest commands in the menu
 bot.api.setMyCommands([
   { command: "yo", description: "Be greeted by the bot" },
-  {
-    command: "effect",
-    description: "Apply text effects on the text. (usage: /effect [text])",
-  },
 ]);
 
 
-/* `bot.start();` is starting the bot and making it ready to receive and handle incoming messages and
-events. Once this method is called, the bot will start listening for updates from Telegram and
-respond accordingly. */
-bot.start();
+// Start the server
+if (process.env.NODE_ENV === "production") {
+  // Use Webhooks for the production server
+  const app = express();
+  app.use(express.json());
+  app.use(webhookCallback(bot, "express"));
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Bot listening on port ${PORT}`);
+  });
+} else {
+  // Use Long Polling for development
+  bot.start();
+}
+
